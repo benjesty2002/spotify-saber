@@ -1,3 +1,4 @@
+import mechanicalsoup
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 import json
@@ -7,6 +8,15 @@ import sys
 
 
 class BeastSaberManager:
+    def __init__(self):
+        self.browser = mechanicalsoup.StatefulBrowser()
+
+    def log_in(self, username, password):
+        self.browser.open("https://bsaber.com/wp-login.php?redirect_to=https%3A%2F%2Fbsaber.com%2F")
+        self.browser.select_form()
+        self.browser["log"] = username
+        self.browser["pwd"] = password
+        self.browser.submit_selected()
 
     def parse_page(self, soup):
         map_details = []
@@ -106,7 +116,12 @@ if __name__ == '__main__':
     # stdout_original = sys.stdout
     # sys.stdout = stdout_file
 
+    with open("config.json", "r") as f:
+        conf = json.load(f)
     bsm = BeastSaberManager()
+    print(f"logging in as {conf['bsaber']['username']}")
+    bsm.log_in(**conf)
+    print("logged in")
     with open("all_songs.json", "r") as f:
         songs = json.load(f)
     all_maps = {}
